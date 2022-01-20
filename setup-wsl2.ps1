@@ -110,6 +110,21 @@ else {
 Write-Host ""
 
 
+Write-Host "Adding hosts file entries for convenience .."
+$hostsFilePath = "C:\Windows\system32\drivers\etc\hosts"
+$oldHostsFile = [IO.File]::ReadAllText($hostsFilePath)
+
+$hostsFileEntries = @('::1 local', '::1 wsl', '::1 docker', '::1 podman')
+foreach ($hostsFileEntry in $hostsFileEntries) {
+    if (! ($hostsFileEntry -in $oldHostsFile)) {
+        Write-Host "Adding '$hostsFileEntry' to hosts file"
+        [IO.File]::AppendAllText($hostsFilePath, "`r`n$hostsFileEntry")
+    }
+}
+Write-Host ""
+
+
+
 Write-Host "You should now have docker, docker-compose, podman and podman-compose available in your terminal"
 Write-Host "The only lack is that absolute paths cannot be used in mounts (neither with compose) unless C: (or whatever drive) is replaced with /mnt/c, and backslashes are changed forward slashes"
 Write-Host ""
