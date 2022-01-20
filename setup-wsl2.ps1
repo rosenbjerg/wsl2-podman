@@ -1,6 +1,9 @@
 # Install script for WSL2 + podman and podman-compose
 # Author: Malte Rosenbjerg
 
+
+
+# Enable required Windows features
 $host.ui.RawUI.WindowTitle = "Installing WSL2 + podman"
 Write-Host "Enabling Windows feature: Microsoft-Windows-Subsystem-Linux .."
 & dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart | Out-Null
@@ -9,6 +12,7 @@ Write-Host "Enabling Windows feature: VirtualMachinePlatform .."
 & dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart | Out-Null
 Write-Host ""
 
+# Install WSL2 kernel update
 Write-Host "Downloading WSL2 kernel update for Windows .."
 $Wsl2KernelUpdatePath = "C:\Users\Public\Downloads\wsl_update_x64.msi"
 $ProgressPreference = 'SilentlyContinue'  
@@ -21,9 +25,11 @@ Start-Sleep -s 1 # wait for msiexec to release file
 Remove-Item $Wsl2KernelUpdatePath
 Write-Host ""
 
+# Set default WSL version for distros
 Write-Host "Setting default WSL version to 2 .."
 & wsl.exe --set-default-version 2 | Out-Null
 
+# Stop and migrate Ubuntu distro if needed
 $wslDistros = (& wsl.exe -l -v) -join "" -replace "\u0000",""
 if ($wslDistros -match 'Ubuntu\s+[^\s]+\s+1')
 {
@@ -57,10 +63,12 @@ else
     Write-Host "The installed Ubuntu distro is already using WSL2"
 }
 
+# Print distro info
 Write-Host "Distro info:"
 & ubuntu run uname -a
 Write-Host ""
 
+# podman or docker?
 $runtime = ''
 while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
     Write-Host 'podman or docker?'
@@ -70,6 +78,7 @@ while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
 Write-Host "$runtime it is!"
 Write-Host ""
 
+# Create runtime install script
 $runtimeInstallScript = ''
 if ($runtime -eq 'podman') 
 {
@@ -118,12 +127,14 @@ sudo service docker start
 }
 
 
+# Run install script for runtime
 Set-Content -Path "C:\install-wsl2-container-runtime.sh" -Value "$runtimeInstallScript"
 & ubuntu.exe run bash "/mnt/c/install-wsl2-container-runtime.sh"
 Remove-Item "C:\install-wsl2-container-runtime.sh"
 Write-Host ""
 
 
+# Add convenience .bat files
 Write-Host "Adding WSL $runtime wrapper bat files .."
 $batFileDir = "C:\NoInstall\docker"
 [System.IO.Directory]::CreateDirectory($batFileDir) *>$null
@@ -135,9 +146,8 @@ if ($runtime -eq 'podman')
     Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nubuntu run podman-compose %*"
 }
 
+# Add to PATH
 Write-Host "Adding bat file directory to current user's PATH environment variable .."
-
-
 $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 if (!$oldEnvPath.Contains($batFileDir)) {
     $newEnvPath = "$oldEnvPath;$batFileDir"
@@ -149,6 +159,7 @@ else {
 Write-Host ""
 
 
+# Add hosts entries
 Write-Host "Adding hosts file entries for convenience .."
 $hostsFilePath = "C:\Windows\system32\drivers\etc\hosts"
 $oldHostsFile = [IO.File]::ReadAllText($hostsFilePath)
@@ -162,6 +173,7 @@ foreach ($hostsFileEntry in $hostsFileEntries) {
 Write-Host ""
 
 
+# Stop WSL for docker service to initialize properly on next start
 if ($runtime -eq 'docker')
 {
     Write-Host "Restarting WSL so docker service is ready when WSL is started next time.."
@@ -169,6 +181,7 @@ if ($runtime -eq 'docker')
     Write-Host ""
 }
 
+# bye
 Write-Host "You should now have docker, docker-compose, podman and podman-compose available in your terminal"
 Write-Host "Please share improvements and suggestions as issues on https://github.com/rosenbjerg/wsl2-podman"
 Write-Host ""
