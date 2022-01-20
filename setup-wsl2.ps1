@@ -103,9 +103,9 @@ Write-Host "Adding bat file directory to current user's PATH environment variabl
 
 
 $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', 'User')
-if (!($batFileDir -in $newEnvPath)) {
-    $newEnvPath  =  "$oldEnvPath;$batFileDir"
-    $oldEnvPath = [Environment]::SetEnvironmentVariable('Path', $newEnvPath, 'User')
+if (!$oldEnvPath.Contains($batFileDir)) {
+    $newEnvPath = "$oldEnvPath;$batFileDir"
+    [Environment]::SetEnvironmentVariable('Path', $newEnvPath, 'User')
 }
 else {
     Write-Host "Current user's PATH environment variable already contains the path. Not modified"
@@ -119,7 +119,7 @@ $oldHostsFile = [IO.File]::ReadAllText($hostsFilePath)
 
 $hostsFileEntries = @('::1 local', '::1 wsl', '::1 docker', '::1 podman')
 foreach ($hostsFileEntry in $hostsFileEntries) {
-    if (! ($hostsFileEntry -in $oldHostsFile)) {
+    if (!$oldHostsFile.Contains($hostsFileEntry)) {
         Write-Host "Adding '$hostsFileEntry' to hosts file"
         [IO.File]::AppendAllText($hostsFilePath, "`r`n$hostsFileEntry")
     }
