@@ -3,7 +3,7 @@
 
 
 # Enable required Windows features
-$host.ui.RawUI.WindowTitle = "Installing WSL2 + podman"
+$host.ui.RawUI.WindowTitle = "Installing WSL2 + ?"
 Write-Host "Enabling Windows feature: Microsoft-Windows-Subsystem-Linux .."
 & dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart | Out-Null
 
@@ -76,6 +76,7 @@ while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
 }
 
 Write-Host "$runtime it is!"
+$host.ui.RawUI.WindowTitle = "Installing WSL2 + $runtime"
 Write-Host ""
 
 
@@ -193,7 +194,11 @@ if ($runtime -eq 'docker')
 }
 
 # bye
-Write-Host "You should now have docker, docker-compose, podman and podman-compose available in your terminal"
+Write-Host "You should now have $runtime, $runtime-compose available in your terminal"
+if ($runtime -eq 'podman')
+{
+    Write-Host "(the aliases docker and docker-compose were also added)"
+}
 Write-Host "Please share improvements and suggestions as issues on https://github.com/rosenbjerg/wsl2-podman"
 Write-Host ""
 Write-Host "Press enter to close this window"
