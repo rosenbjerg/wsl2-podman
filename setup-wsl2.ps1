@@ -147,7 +147,7 @@ Write-Host ""
 
 # Add convenience .bat files
 Write-Host "Adding WSL $runtime wrapper bat files .."
-$batFileDir = "C:\NoInstall\docker"
+$batFileDir = "C:\docker-bat-wrappers"
 [System.IO.Directory]::CreateDirectory($batFileDir) *>$null
 Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nubuntu run $runtime %*"
 Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nubuntu run $runtime-compose %*"
