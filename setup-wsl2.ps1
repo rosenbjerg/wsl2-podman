@@ -133,7 +133,7 @@ sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip
 echo "- Installing docker-compose through pip3 .."
 sudo pip3 install docker-compose -q
 
-echo "Allow `$USER access to call docker service without entering password"
+echo "Permit user `$USER starting docker service without password"
 grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *" | sudo tee -a /etc/sudoers > /dev/null
 
 echo "Setup auto-start docker service on Ubuntu (WSL) started "
