@@ -78,7 +78,7 @@ Write-Host ""
 # Create runtime install script
 $runtimeInstallScript = ''
 if ($runtime -eq 'podman') 
-{
+{   # podman install script
     Write-Host "Installing podman and podman-compose in Ubuntu distro .."
     $runtimeInstallScript = @"
 podman -v > /dev/null 2>&1 && podman-compose -v > /dev/null 2>&1 && echo "- podman and podman-compose are already installed" && exit 0;
@@ -107,7 +107,7 @@ grep -Fxq 'alias docker-compose=podman-compose' ~/.profile || printf "\nalias do
 "@ -replace '"',"`"" -replace "`r",""
 }
 elseif ($runtime -eq 'docker')
-{
+{   # docker install script
     Write-Host "Installing docker and docker-compose in Ubuntu distro .."
     $runtimeInstallScript = @"
 docker -v > /dev/null 2>&1 && docker-compose -v > /dev/null 2>&1 && echo "- docker and docker-compose are already installed" && exit 0;
