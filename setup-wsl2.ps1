@@ -41,6 +41,7 @@ if ($wslDistros -match 'Ubuntu\s+[^\s]+\s+1')
     }
     
     Write-Host "The will now be migrated to WSL2. Press enter to continue"
+    Read-Host
     Write-Host "Migrating Ubuntu distro to WSL2 .. "
     & wsl.exe --set-version Ubuntu 2 | Out-Null
 }
@@ -57,10 +58,6 @@ elseif (!($wslDistros -match 'Ubuntu\s+[^\s]+\s+[12]'))
     Write-Host "Installing Ubuntu WSL2 image .."
     Add-AppxPackage "$WslUbuntu"
     Remove-Item "$WslUbuntu"
-}
-else 
-{
-    Write-Host "The installed Ubuntu distro is already using WSL2"
 }
 
 # Print distro info
@@ -85,23 +82,28 @@ if ($runtime -eq 'podman')
     Write-Host "Installing podman and podman-compose in Ubuntu distro .."
     $runtimeInstallScript = @"
 podman -v > /dev/null 2>&1 && podman-compose -v > /dev/null 2>&1 && echo "- podman and podman-compose are already installed" && exit 0;
+
 echo "- Adding kubic podman source and key .."
 . /etc/os-release
 sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x`${NAME}_`${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
 wget -q -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x`${NAME}_`${VERSION_ID}/Release.key -O ~/Release.key
 sudo apt-key add - < ~/Release.key
 sudo rm ~/Release.key
+
 echo "- Installing podman .."
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install podman
+
 echo "- Installing pip3 .."
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip
+
 echo "- Installing podman-compose through pip3 .."
 sudo pip3 install podman-compose -q
-echo "- Adding aliases for docker and docker-compose .."
-printf "\nalias docker=podman" >> ~/.profile
-printf "\nalias docker-compose=podman-compose" >> ~/.profile
+
+echo "- Adding aliases for docker and docker-compose in .profile .."
+grep -Fxq 'alias docker=podman' ~/.profile || printf "\nalias docker=podman" >> ~/.profile
+grep -Fxq 'alias docker-compose=podman-compose' ~/.profile || printf "\nalias docker-compose=podman-compose" >> ~/.profile
 "@ -replace '"',"`"" -replace "`r",""
 }
 elseif ($runtime -eq 'docker')
@@ -109,20 +111,29 @@ elseif ($runtime -eq 'docker')
     Write-Host "Installing docker and docker-compose in Ubuntu distro .."
     $runtimeInstallScript = @"
 docker -v > /dev/null 2>&1 && docker-compose -v > /dev/null 2>&1 && echo "- docker and docker-compose are already installed" && exit 0;
+
 echo "- Adding docker source .."
-sudo groupadd docker
+sudo groupadd docker > /dev/null
 sudo usermod -aG docker `${USER}
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable"
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable" > /dev/null
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
+
 echo "- Installing docker .."
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 install -y docker-ce containerd.io
+
 echo "- Installing pip3 .."
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip
+
 echo "- Installing docker-compose through pip3 .."
 sudo pip3 install docker-compose -q
-sudo service docker start
+
+echo "Allow `$USER access to call docker service without entering password"
+grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || echo "`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *" | sudo tee -a /etc/sudoers > /dev/null
+
+echo "Setup auto-start docker service on Ubuntu (WSL) started "
+grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker start" >> ~/.profile
 "@ -replace '"',"`"" -replace "`r",""
 }
 
@@ -147,16 +158,13 @@ if ($runtime -eq 'podman')
 }
 
 # Add to PATH
-Write-Host "Adding bat file directory to current user's PATH environment variable .."
 $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 if (!$oldEnvPath.Contains($batFileDir)) {
     $newEnvPath = "$oldEnvPath;$batFileDir"
+    Write-Host "Adding bat file directory to current user's PATH environment variable .."
     [Environment]::SetEnvironmentVariable('Path', $newEnvPath, 'User')
+    Write-Host ""
 }
-else {
-    Write-Host "Current user's PATH environment variable already contains the path. Not modified"
-}
-Write-Host ""
 
 
 # Add hosts entries
