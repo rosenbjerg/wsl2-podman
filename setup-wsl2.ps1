@@ -2,7 +2,6 @@
 # Author: Malte Rosenbjerg
 
 
-
 # Enable required Windows features
 $host.ui.RawUI.WindowTitle = "Installing WSL2 + podman"
 Write-Host "Enabling Windows feature: Microsoft-Windows-Subsystem-Linux .."
@@ -12,22 +11,24 @@ Write-Host "Enabling Windows feature: VirtualMachinePlatform .."
 & dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart | Out-Null
 Write-Host ""
 
+
 # Install WSL2 kernel update
 Write-Host "Downloading WSL2 kernel update for Windows .."
 $Wsl2KernelUpdatePath = "C:\Users\Public\Downloads\wsl_update_x64.msi"
 $ProgressPreference = 'SilentlyContinue'  
 Invoke-WebRequest -Uri "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi" -OutFile $Wsl2KernelUpdatePath -UseBasicParsing
 $ProgressPreference = 'Continue'
-
 Write-Host "Installing WSL2 kernel update for Windows .."
 & msiexec.exe /I $($Wsl2KernelUpdatePath) /qn
 Start-Sleep -s 1 # wait for msiexec to release file
 Remove-Item $Wsl2KernelUpdatePath
 Write-Host ""
 
+
 # Set default WSL version for distros
 Write-Host "Setting default WSL version to 2 .."
 & wsl.exe --set-default-version 2 | Out-Null
+
 
 # Stop and migrate Ubuntu distro if needed
 $wslDistros = (& wsl.exe -l -v) -join "" -replace "\u0000",""
@@ -56,14 +57,16 @@ elseif (!($wslDistros -match 'Ubuntu\s+[^\s]+\s+[12]'))
     Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile "$WslUbuntu" -UseBasicParsing
     $ProgressPreference = 'Continue'
     Write-Host "Installing Ubuntu WSL2 image .."
-    Add-AppxPackage "$WslUbuntu"
-    Remove-Item "$WslUbuntu"
+    Add-AppxPackage "$WslUbuntu" | Out-Null
+    Remove-Item "$WslUbuntu" | Out-Null
 }
+
 
 # Print distro info
 Write-Host "Distro info:"
 & ubuntu run uname -a
 Write-Host ""
+
 
 # podman or docker?
 $runtime = ''
@@ -74,6 +77,7 @@ while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
 
 Write-Host "$runtime it is!"
 Write-Host ""
+
 
 # Create runtime install script
 $runtimeInstallScript = ''
@@ -141,14 +145,14 @@ grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start >
 # Run install script for runtime
 Set-Content -Path "C:\install-wsl2-container-runtime.sh" -Value "$runtimeInstallScript"
 & ubuntu.exe run bash "/mnt/c/install-wsl2-container-runtime.sh"
-Remove-Item "C:\install-wsl2-container-runtime.sh"
+Remove-Item "C:\install-wsl2-container-runtime.sh" | Out-Null
 Write-Host ""
 
 
 # Add convenience .bat files
 Write-Host "Adding WSL $runtime wrapper bat files .."
 $batFileDir = "C:\docker-bat-wrappers"
-[System.IO.Directory]::CreateDirectory($batFileDir) *>$null
+[System.IO.Directory]::CreateDirectory($batFileDir) | Out-Null
 Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nubuntu run $runtime %*"
 Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nubuntu run $runtime-compose %*"
 if ($runtime -eq 'podman')
@@ -157,12 +161,12 @@ if ($runtime -eq 'podman')
     Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nubuntu run podman-compose %*"
 }
 
+
 # Add to PATH
 $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 if (!$oldEnvPath.Contains($batFileDir)) {
-    $newEnvPath = "$oldEnvPath;$batFileDir"
     Write-Host "Adding bat file directory to current user's PATH environment variable .."
-    [Environment]::SetEnvironmentVariable('Path', $newEnvPath, 'User')
+    [Environment]::SetEnvironmentVariable('Path', "$oldEnvPath;$batFileDir", 'User')
     Write-Host ""
 }
 
@@ -171,8 +175,7 @@ if (!$oldEnvPath.Contains($batFileDir)) {
 Write-Host "Adding hosts file entries for convenience .."
 $hostsFilePath = "C:\Windows\system32\drivers\etc\hosts"
 $oldHostsFile = [IO.File]::ReadAllText($hostsFilePath)
-$hostsFileEntries = @('::1 wsl', '::1 docker', '::1 podman')
-foreach ($hostsFileEntry in $hostsFileEntries) {
+foreach ($hostsFileEntry in @('::1 wsl', '::1 docker', '::1 podman')) {
     if (!$oldHostsFile.Contains($hostsFileEntry)) {
         Write-Host "Adding '$hostsFileEntry' to hosts file"
         [IO.File]::AppendAllText($hostsFilePath, "`r`n$hostsFileEntry")
