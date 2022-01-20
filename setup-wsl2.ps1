@@ -129,7 +129,7 @@ Write-Host ""
 
 
 Write-Host "You should now have docker, docker-compose, podman and podman-compose available in your terminal"
-Write-Host "The only lack is that absolute paths cannot be used in mounts (neither with compose) unless C: (or whatever drive) is replaced with /mnt/c, and backslashes are changed forward slashes"
+Write-Host "Please share improvements and suggestions as issues on https://github.com/rosenbjerg/wsl2-podman"
 Write-Host ""
 Write-Host "Press enter to close this window"
 Read-Host
