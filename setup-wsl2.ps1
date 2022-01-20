@@ -103,7 +103,7 @@ Write-Host "Adding bat file directory to current user's PATH environment variabl
 $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 if (!($batFileDir -in $newEnvPath)) {
     $newEnvPath  =  "$oldEnvPath;$batFileDir"
-    $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', $newEnvPath, 'User')
+    $oldEnvPath = [Environment]::SetEnvironmentVariable('Path', $newEnvPath, 'User')
 }
 else {
     Write-Host "Current user's PATH environment variable already contains the path. Not modified"
