@@ -83,12 +83,12 @@ sudo apt-key add - < ~/Release.key
 sudo rm ~/Release.key
 echo "- Installing podman .."
 sudo apt-get update -qq 2>&1
-sudo apt-get -qq -y install podman 2>&1
+sudo apt-get -qq -y install podman
 echo "- Installing pip3 .."
 sudo apt-get update -qq 2>&1
 sudo apt-get -qq -y install python3-pip 2>&1
 echo "- Installing podman-compose through pip3 .."
-sudo pip3 install podman-compose -qq 2>&1
+sudo pip3 install podman-compose -qq
 echo "- Adding aliases for docker and docker-compose .."
 printf "\nalias docker=podman" >> ~/.profile
 printf "\nalias docker-compose=podman-compose" >> ~/.profile
@@ -103,10 +103,10 @@ echo "- Adding docker source .."
 sudo groupadd docker
 sudo usermod -aG docker `${USER}
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable" 2>&1
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable"
 sudo apt-get update -qq 2>&1
 echo "- Installing docker .."
-sudo apt-get install -qq -y docker-ce containerd.io 2>&1
+sudo apt-get install -qq -y docker-ce containerd.io
 echo "- Installing docker-compose .."
 sudo curl -sSL https://github.com/docker/compose/releases/download/`$(curl -s https://github.com/docker/compose/tags | grep "compose/releases/tag" | sed -r 's|.*([0-9]+\.[0-9]+\.[0-9]+).*|\1|p' | head -n 1)/docker-compose-`$(uname -s)-`$(uname -m) -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
 sudo service docker start
