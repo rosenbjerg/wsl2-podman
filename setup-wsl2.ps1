@@ -61,8 +61,19 @@ Write-Host "Distro info:"
 & ubuntu run uname -a
 Write-Host ""
 
-Write-Host "Installing podman and podman-compose in Ubuntu distro .."
-$installPodman = @"
+$runtime = ''
+while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
+    Write-Host 'podman or docker?'
+    $runtime = Read-Host
+}
+
+Write-Host "$runtime it is!"
+
+$runtimeInstallScript = ''
+if ($runtime -eq 'podman') 
+{
+    Write-Host "Installing podman and podman-compose in Ubuntu distro .."
+    $runtimeInstallScript = @"
 podman -v > /dev/null 2>&1 && podman-compose -v > /dev/null 2>&1 && echo "- podman and podman-compose are already installed" && exit 0;
 echo "- Adding kubic podman source and key .."
 . /etc/os-release
@@ -71,33 +82,54 @@ wget -q -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers
 sudo apt-key add - < ~/Release.key
 sudo rm ~/Release.key
 echo "- Installing podman .."
-sudo apt-get update -qq
-sudo apt-get -qq -y install podman
-#sudo mkdir -p /etc/containers
-#echo -e "[registries.search]\nregistries = ['docker.io', 'quay.io']" | sudo tee /etc/containers/registries.conf
+sudo apt-get update -qq 2>&1
+sudo apt-get -qq -y install podman 2>&1
 echo "- Installing pip3 .."
-sudo apt-get update -qq
-sudo apt-get -qq -y install python3-pip
+sudo apt-get update -qq 2>&1
+sudo apt-get -qq -y install python3-pip 2>&1
 echo "- Installing podman-compose through pip3 .."
-sudo pip3 install podman-compose -qq
+sudo pip3 install podman-compose -qq 2>&1
 echo "- Adding aliases for docker and docker-compose .."
 printf "\nalias docker=podman" >> ~/.profile
 printf "\nalias docker-compose=podman-compose" >> ~/.profile
 "@ -replace '"',"`"" -replace "`r",""
+}
+elseif ($runtime -eq 'docker')
+{
+    Write-Host "Installing docker and docker-compose in Ubuntu distro .."
+    $runtimeInstallScript = @"
+docker -v > /dev/null 2>&1 && docker-compose -v > /dev/null 2>&1 && echo "- docker and docker-compose are already installed" && exit 0;
+echo "- Adding docker source .."
+sudo groupadd docker
+sudo usermod -aG docker `${USER}
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable" 2>&1
+sudo apt-get update -qq 2>&1
+echo "- Installing docker .."
+sudo apt-get install -qq -y docker-ce containerd.io 2>&1
+echo "- Installing docker-compose .."
+sudo curl -sSL https://github.com/docker/compose/releases/download/`$(curl -s https://github.com/docker/compose/tags | grep "compose/releases/tag" | sed -r 's|.*([0-9]+\.[0-9]+\.[0-9]+).*|\1|p' | head -n 1)/docker-compose-`$(uname -s)-`$(uname -m) -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+sudo service docker start
+"@ -replace '"',"`"" -replace "`r",""
+}
 
-Set-Content -Path "C:\install-podman-for-wsl2.sh" -Value "$installPodman"
-& ubuntu.exe run bash "/mnt/c/install-podman-for-wsl2.sh"
-Remove-Item "C:\install-podman-for-wsl2.sh"
+
+Set-Content -Path "C:\install-wsl2-container-runtime.sh" -Value "$runtimeInstallScript"
+& ubuntu.exe run bash "/mnt/c/install-wsl2-container-runtime.sh"
+Remove-Item "C:\install-wsl2-container-runtime.sh"
 Write-Host ""
 
 
 Write-Host "Adding WSL podman/docker wrapper bat files .."
 $batFileDir = "C:\NoInstall\docker"
 [System.IO.Directory]::CreateDirectory($batFileDir) *>$null
-Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nubuntu run podman %*"
-Set-Content -Path "$batFileDir\podman.bat" -Value "@echo off`r`nubuntu run podman %*"
-Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nubuntu run podman-compose %*"
-Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nubuntu run podman-compose %*"
+Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nubuntu run $runtime %*"
+Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nubuntu run $runtime-compose %*"
+if ($runtime -eq 'podman')
+{
+    Set-Content -Path "$batFileDir\podman.bat" -Value "@echo off`r`nubuntu run podman %*"
+    Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nubuntu run podman-compose %*"
+}
 
 Write-Host "Adding bat file directory to current user's PATH environment variable .."
 
