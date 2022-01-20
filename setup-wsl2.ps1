@@ -36,7 +36,7 @@ if ($wslDistros -match 'Ubuntu\s+[^\s]+\s+1')
     Write-Host "Migrating Ubuntu distro to WSL2 .. "
     & wsl.exe --set-version Ubuntu 2 | Out-Null
 }
-elseif (!$wslDistros -match 'Ubuntu\s+[^\s]+\s+[12]')
+elseif (!($wslDistros -match 'Ubuntu\s+[^\s]+\s+[12]'))
 {
     Write-Host "Ubuntu distro was not found and will now be installed. Press enter to continue .."
     Read-Host
@@ -99,8 +99,9 @@ Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nubuntu r
 
 Write-Host "Adding bat file directory to current user's PATH environment variable .."
 
+
 $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', 'User')
-if (! $batFileDir -in $newEnvPath) {
+if (!($batFileDir -in $newEnvPath)) {
     $newEnvPath  =  "$oldEnvPath;$batFileDir"
     $oldEnvPath = [Environment]::GetEnvironmentVariable('Path', $newEnvPath, 'User')
 }
