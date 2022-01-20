@@ -1,4 +1,4 @@
-# Install script for WSL2 + podman and podman-compose
+# Install script for WSL2 + podman and podman-compose (or docker and docker-compose I guess)
 # Author: Malte Rosenbjerg
 
 
