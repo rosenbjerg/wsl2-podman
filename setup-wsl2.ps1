@@ -85,7 +85,7 @@ podman -v > /dev/null 2>&1 && podman-compose -v > /dev/null 2>&1 && echo "- podm
 
 echo "- Adding kubic podman source and key .."
 . /etc/os-release
-sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x`${NAME}_`${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+sudo sh -c "printf 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x`${NAME}_`${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
 wget -q -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x`${NAME}_`${VERSION_ID}/Release.key -O ~/Release.key
 sudo apt-key add - < ~/Release.key
 sudo rm ~/Release.key
@@ -130,7 +130,7 @@ echo "- Installing docker-compose through pip3 .."
 sudo pip3 install docker-compose -q
 
 echo "Allow `$USER access to call docker service without entering password"
-grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || echo "`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *" | sudo tee -a /etc/sudoers > /dev/null
+grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *" | sudo tee -a /etc/sudoers > /dev/null
 
 echo "Setup auto-start docker service on Ubuntu (WSL) started "
 grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker start" >> ~/.profile
