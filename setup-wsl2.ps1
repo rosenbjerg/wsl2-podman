@@ -68,6 +68,7 @@ while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
 }
 
 Write-Host "$runtime it is!"
+Write-Host ""
 
 $runtimeInstallScript = ''
 if ($runtime -eq 'podman') 
@@ -104,7 +105,7 @@ sudo groupadd docker
 sudo usermod -aG docker `${USER}
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable"
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 update 2>&1
+sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
 echo "- Installing docker .."
 sudo apt-get -qq -o=Dpkg::Use-Pty=0 install -y docker-ce containerd.io
 echo "- Installing pip3 .."
@@ -123,7 +124,7 @@ Remove-Item "C:\install-wsl2-container-runtime.sh"
 Write-Host ""
 
 
-Write-Host "Adding WSL podman/docker wrapper bat files .."
+Write-Host "Adding WSL $runtime wrapper bat files .."
 $batFileDir = "C:\NoInstall\docker"
 [System.IO.Directory]::CreateDirectory($batFileDir) *>$null
 Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nubuntu run $runtime %*"
@@ -151,7 +152,6 @@ Write-Host ""
 Write-Host "Adding hosts file entries for convenience .."
 $hostsFilePath = "C:\Windows\system32\drivers\etc\hosts"
 $oldHostsFile = [IO.File]::ReadAllText($hostsFilePath)
-
 $hostsFileEntries = @('::1 wsl', '::1 docker', '::1 podman')
 foreach ($hostsFileEntry in $hostsFileEntries) {
     if (!$oldHostsFile.Contains($hostsFileEntry)) {
