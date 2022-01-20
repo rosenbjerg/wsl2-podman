@@ -1,3 +1,5 @@
+# Install script for WSL2 + podman and podman-compose
+# Author: Malte Rosenbjerg
 
 $host.ui.RawUI.WindowTitle = "Installing WSL2 + podman"
 Write-Host "Enabling Windows feature: Microsoft-Windows-Subsystem-Linux .."
