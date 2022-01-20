@@ -117,7 +117,7 @@ Write-Host "Adding hosts file entries for convenience .."
 $hostsFilePath = "C:\Windows\system32\drivers\etc\hosts"
 $oldHostsFile = [IO.File]::ReadAllText($hostsFilePath)
 
-$hostsFileEntries = @('::1 local', '::1 wsl', '::1 docker', '::1 podman')
+$hostsFileEntries = @('::1 wsl', '::1 docker', '::1 podman')
 foreach ($hostsFileEntry in $hostsFileEntries) {
     if (!$oldHostsFile.Contains($hostsFileEntry)) {
         Write-Host "Adding '$hostsFileEntry' to hosts file"
