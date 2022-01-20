@@ -162,6 +162,12 @@ foreach ($hostsFileEntry in $hostsFileEntries) {
 Write-Host ""
 
 
+if ($runtime -eq 'docker')
+{
+    Write-Host "Restarting WSL so docker service is ready when WSL is started next time.."
+    & wsl.exe --shutdown | Out-Null
+    Write-Host ""
+}
 
 Write-Host "You should now have docker, docker-compose, podman and podman-compose available in your terminal"
 Write-Host "Please share improvements and suggestions as issues on https://github.com/rosenbjerg/wsl2-podman"
