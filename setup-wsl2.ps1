@@ -58,8 +58,7 @@ elseif (!($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+[12]'))
     $ProgressPreference = 'Continue'
     Write-Host "Installing Ubuntu WSL2 image .."
     Add-AppxPackage "$WslUbuntu" | Out-Null
-    Write-Host "Ubuntu is now installed. Please open it from your Start Menu and let it install to end. Then press enter"
-    Read-Host
+    & ubuntu2004 run echo OK
     Remove-Item "$WslUbuntu" | Out-Null
 }
 
