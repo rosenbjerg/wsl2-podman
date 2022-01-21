@@ -193,6 +193,7 @@ if ($runtime -eq 'docker')
 {
     Write-Host "Restarting WSL so docker service is ready when WSL is started next time.."
     & wsl.exe --shutdown | Out-Null
+    & wsl.exe -e echo OK | Out-Null
     Write-Host ""
 }
 
