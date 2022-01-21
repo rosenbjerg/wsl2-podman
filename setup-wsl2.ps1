@@ -1,7 +1,6 @@
 # Install script for WSL2 + podman and podman-compose (or docker and docker-compose I guess)
 # Author: Malte Rosenbjerg
 
-
 # Enable required Windows features
 $host.ui.RawUI.WindowTitle = "Installing WSL2 + ?"
 Write-Host "Enabling Windows feature: Microsoft-Windows-Subsystem-Linux .."
@@ -32,21 +31,22 @@ Write-Host "Setting default WSL version to 2 .."
 
 # Stop and migrate Ubuntu distro if needed
 $wslDistros = (& wsl.exe -l -v) -join "" -replace "\u0000",""
-if ($wslDistros -match 'Ubuntu\s+[^\s]+\s+1')
+if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1')
 {
-    if ($wslDistros -match 'Ubuntu\s+Running\s+1')
+    if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+Running\s+1')
     {
         Write-Host "The current Ubuntu distro needs to be stopped before being migrated to WSL2. Press enter to continue"
         Read-Host
         & wsl.exe --shutdown | Out-Null
     }
     
-    Write-Host "The will now be migrated to WSL2. Press enter to continue"
+    Write-Host "Ubuntu$ubuntuVersion will now be migrated to WSL2. Press enter to continue"
     Read-Host
-    Write-Host "Migrating Ubuntu distro to WSL2 .. "
-    & wsl.exe --set-version Ubuntu 2 | Out-Null
+    $ubuntuVersion = [Regex]::Match("Ubuntu Stopped 1", "Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1").Groups[1].Value
+    Write-Host "Migrating Ubuntu$ubuntuVersion distro to WSL2 .. "
+    & wsl.exe --set-version "Ubuntu$ubuntuVersion" 2 | Out-Null
 }
-elseif (!($wslDistros -match 'Ubuntu\s+[^\s]+\s+[12]'))
+elseif (!($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+[12]'))
 {
     Write-Host "Ubuntu distro was not found and will now be installed. Press enter to continue .."
     Read-Host
@@ -64,7 +64,7 @@ elseif (!($wslDistros -match 'Ubuntu\s+[^\s]+\s+[12]'))
 
 # Print distro info
 Write-Host "Distro info:"
-& ubuntu run uname -a
+& wsl -e uname -a
 Write-Host ""
 
 
@@ -145,7 +145,7 @@ grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start >
 
 # Run install script for runtime
 Set-Content -Path "C:\install-wsl2-container-runtime.sh" -Value "$runtimeInstallScript"
-& ubuntu.exe run bash "/mnt/c/install-wsl2-container-runtime.sh"
+& wsl -e bash "/mnt/c/install-wsl2-container-runtime.sh"
 Remove-Item "C:\install-wsl2-container-runtime.sh" | Out-Null
 Write-Host ""
 
@@ -154,12 +154,12 @@ Write-Host ""
 Write-Host "Adding WSL $runtime wrapper bat files .."
 $batFileDir = "C:\docker-bat-wrappers"
 [System.IO.Directory]::CreateDirectory($batFileDir) | Out-Null
-Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nubuntu run $runtime %*"
-Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nubuntu run $runtime-compose %*"
+Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nwsl -e $runtime %*"
+Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nwsl -e $runtime-compose %*"
 if ($runtime -eq 'podman')
 {
-    Set-Content -Path "$batFileDir\podman.bat" -Value "@echo off`r`nubuntu run podman %*"
-    Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nubuntu run podman-compose %*"
+    Set-Content -Path "$batFileDir\podman.bat" -Value "@echo off`r`nwsl -e podman %*"
+    Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nwsl -e podman-compose %*"
 }
 
 
