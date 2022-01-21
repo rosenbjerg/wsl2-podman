@@ -137,10 +137,10 @@ echo "- Installing docker-compose through pip3 .."
 sudo pip3 install docker-compose -q
 
 echo "Permit user `$USER starting docker service without password"
-grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *" | sudo tee -a /etc/sudoers > /dev/null
+sudo grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *\n" | sudo tee -a /etc/sudoers > /dev/null
 
 echo "Setup auto-start docker service on Ubuntu (WSL) started "
-grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker start" >> ~/.profile
+sudo grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile
 "@ -replace '"',"`"" -replace "`r",""
 }
 
