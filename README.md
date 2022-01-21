@@ -21,4 +21,4 @@ Instead you will have to either use relative paths or rewrite `C:\` to `/mnt/c/`
 Some applications automatically resolve localhost to `127.0.0.1` (IPv4) which Windows doesn't forward to WSL2, without checking the Windows `hosts` file.
 This means you may experience problems connecting to the containers running in WSL2, if using `localhost`. 
 
-If you do, try changing from `localhost`/`127.0.0.1` to `::1` or `wsl` for TCP connections (`[::1]` when used with HTTP)
+If you do, try changing from `localhost`/`127.0.0.1` to `::1` (for TCP connections and `[::1]` for HTTP) or to `wsl`
