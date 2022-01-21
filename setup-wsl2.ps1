@@ -140,7 +140,7 @@ echo "Permit user `$USER starting docker service without password"
 sudo grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *\n" | sudo tee -a /etc/sudoers > /dev/null
 
 echo "Setup auto-start docker service on Ubuntu (WSL) started "
-sudo grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile
+grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile
 "@ -replace '"',"`"" -replace "`r",""
 }
 
