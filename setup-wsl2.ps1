@@ -108,8 +108,9 @@ echo "- Installing podman-compose through pip3 .."
 sudo pip3 install podman-compose -q
 
 echo "- Adding aliases for docker and docker-compose in .profile .."
-grep -Fxq 'alias docker=podman' ~/.profile || printf "\nalias docker=podman" >> ~/.profile
-grep -Fxq 'alias docker-compose=podman-compose' ~/.profile || printf "\nalias docker-compose=podman-compose" >> ~/.profile
+grep -Fxq 'alias docker=podman' ~/.profile || printf "\nalias docker=podman" >> ~/.profile;
+grep -Fxq 'alias docker-compose=podman-compose' ~/.profile || printf "\nalias docker-compose=podman-compose" >> ~/.profile;
+
 "@ -replace '"',"`"" -replace "`r",""
 }
 elseif ($runtime -eq 'docker')
@@ -136,10 +137,11 @@ echo "- Installing docker-compose through pip3 .."
 sudo pip3 install docker-compose -q
 
 echo "Setup auto-start docker service on Ubuntu (WSL) started"
-grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile
+grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile;
 
 echo "Permit user `$USER starting docker service without password"
-sudo grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *\n" | sudo tee -a /etc/sudoers > /dev/null
+sudo grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *\n" | sudo tee -a /etc/sudoers > /dev/null;
+
 "@ -replace '"',"`"" -replace "`r",""
 }
 
