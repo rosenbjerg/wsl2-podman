@@ -13,6 +13,12 @@ Please create issues for improvements or suggestions to the script
 
 ## Known problems
 
+### Running the installer
+If you experience problems starting the installer using the `.bat` script, it may be because the `.ps1` file is blocked in Windows. 
+
+Right-click on the `.ps1` file and select Properties. Then in the General tab, you will see the option to unblock it. 
+After unblocking, you should be able to start the install script.
+
 ### Absolute paths
 One problem with this docker-desktop alternative is that you cannot use absolute paths for mounting.
 Instead you will have to either use relative paths or rewrite `C:\` to `/mnt/c/` and use forward slashes
