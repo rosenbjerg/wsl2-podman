@@ -26,25 +26,25 @@ Write-Host ""
 
 # Set default WSL version for distros
 Write-Host "Setting default WSL version to 2 .."
-& wsl.exe --set-default-version 2 | Out-Null
+& wsl --set-default-version 2 | Out-Null
 
 
 # Stop and migrate Ubuntu distro if needed
-$wslDistros = (& wsl.exe -l -v) -join "" -replace "\u0000",""
+$wslDistros = (& wsl -l -v) -join "" -replace "\u0000",""
 if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1')
 {
     if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+Running\s+1')
     {
         Write-Host "The current Ubuntu distro needs to be stopped before being migrated to WSL2. Press enter to continue"
         Read-Host
-        & wsl.exe --shutdown | Out-Null
+        & wsl --shutdown | Out-Null
     }
     
     Write-Host "Ubuntu$ubuntuVersion will now be migrated to WSL2. Press enter to continue"
     Read-Host
-    $ubuntuVersion = [Regex]::Match("Ubuntu Stopped 1", "Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1").Groups[1].Value
+    $ubuntuVersion = [Regex]::Match($wslDistros, "Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1").Groups[1].Value
     Write-Host "Migrating Ubuntu$ubuntuVersion distro to WSL2 .. "
-    & wsl.exe --set-version "Ubuntu$ubuntuVersion" 2 | Out-Null
+    & wsl --set-version "Ubuntu$ubuntuVersion" 2 | Out-Null
 }
 elseif (!($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+[12]'))
 {
@@ -79,6 +79,11 @@ while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
 Write-Host "$runtime it is!"
 $host.ui.RawUI.WindowTitle = "Installing WSL2 + $runtime"
 Write-Host ""
+
+
+# Set priority for Cisco AnyConnect network adapter if found
+Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match 'Cisco AnyConnect'} | Set-NetIPInterface -InterfaceMetric 6000 | Out-Null
+& wsl --shutdown | Out-Null
 
 
 # Create runtime install script
@@ -137,10 +142,10 @@ echo "- Installing docker-compose through pip3 .."
 sudo pip3 install docker-compose -q
 
 echo "Setup auto-start docker service on Ubuntu (WSL) started"
-grep -Fxq 'sudo service docker status > /dev/null || sudo service docker start > /dev/null' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile;
+grep -Fq 'sudo service docker start' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile;
 
 echo "Permit user `$USER starting docker service without password"
-sudo grep -Fxq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *\n" | sudo tee -a /etc/sudoers > /dev/null;
+sudo grep -Fq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *\n" | sudo tee -a /etc/sudoers > /dev/null;
 
 "@ -replace '"',"`"" -replace "`r",""
 }
@@ -192,8 +197,8 @@ Write-Host ""
 if ($runtime -eq 'docker')
 {
     Write-Host "Restarting WSL so docker service is ready when WSL is started next time.."
-    & wsl.exe --shutdown | Out-Null
-    & wsl.exe -e echo OK | Out-Null
+    & wsl --shutdown | Out-Null
+    & wsl -e echo OK | Out-Null
     Write-Host ""
 }
 
