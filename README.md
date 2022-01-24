@@ -3,7 +3,7 @@ Script for installing WSL2 + `podman` and `podman-compose` (or `docker` and `doc
 
 
 ## Installation
-- Download `.bat` and `.ps1` scripts into same folder and run the `.bat` script (will prompt for admin rights)
+- [Download](https://github.com/rosenbjerg/wsl2-podman/archive/refs/heads/main.zip) and extract the `.bat` and `.ps1` files into same folder and run the `.bat` script (will prompt for admin rights)
 - Switch from `localhost` to `::1` or `wsl` if you experience problems connecting to a container from some application on the host
 
 
