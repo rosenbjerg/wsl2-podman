@@ -92,67 +92,91 @@ if ($runtime -eq 'podman')
 {   # podman install script
     Write-Host "Installing podman and podman-compose in Ubuntu distro .."
     $runtimeInstallScript = @"
-podman -v > /dev/null 2>&1 && podman-compose -v > /dev/null 2>&1 && echo "- podman and podman-compose are already installed" && exit 0;
+podman -v > /dev/null 2>&1 && {
+    echo " podman is already installed";
+} || {
+    echo "- Adding kubic podman source and key ..";
+    . /etc/os-release;
+    sudo sh -c "printf 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x`${NAME}_`${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list";
+    wget -q -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x`${NAME}_`${VERSION_ID}/Release.key -O ~/Release.key;
+    sudo apt-key add - < ~/Release.key;
+    sudo rm ~/Release.key;
 
-echo "- Adding kubic podman source and key .."
-. /etc/os-release
-sudo sh -c "printf 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x`${NAME}_`${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
-wget -q -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x`${NAME}_`${VERSION_ID}/Release.key -O ~/Release.key
-sudo apt-key add - < ~/Release.key
-sudo rm ~/Release.key
+    echo "- Installing podman ..";
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install podman;
+}
+grep -Fq 'refresh_rootless_podman_after_reboot' ~/.profile || {
+    echo "- Adding podman tmp file clearing";
+    printf "
+function refresh_rootless_podman_after_reboot {
+    local boot_id=\"\`$(cat /proc/sys/kernel/random/boot_id)\";
+    local boot_id_file=\"/tmp/last-podman-wipe-boot-id\";
+    local libpod_tmp=\"/tmp/podman-run-\`$(id -u)/libpod/tmp\";
+    ! test -f \`$boot_id_file || ! grep -Fq \"\`$boot_id\" \"\`$boot_id_file\" && {
+      rm -rf \"\`$libpod_tmp\";
+      printf \"\`$boot_id\" > \"\`$boot_id_file\";
+    }
+  }
+refresh_rootless_podman_after_reboot;" >> ~/.profile;
+}
 
-echo "- Installing podman .."
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install podman
+podman-compose -v > /dev/null 2>&1 && {
+    echo " podman-compose is already installed";
+} || {
+    echo "- Installing pip3 ..";
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip;
 
-echo "- Installing pip3 .."
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip
+    echo "- Installing podman-compose through pip3 ..";
+    sudo pip3 install podman-compose -q;
+}
 
-echo "- Installing podman-compose through pip3 .."
-sudo pip3 install podman-compose -q
-
-echo "- Adding aliases for docker and docker-compose in .profile .."
+echo "- Adding aliases for docker and docker-compose in .profile ..";
 grep -Fxq 'alias docker=podman' ~/.profile || printf "\nalias docker=podman" >> ~/.profile;
 grep -Fxq 'alias docker-compose=podman-compose' ~/.profile || printf "\nalias docker-compose=podman-compose" >> ~/.profile;
-
 "@ -replace '"',"`"" -replace "`r",""
 }
 elseif ($runtime -eq 'docker')
 {   # docker install script
     Write-Host "Installing docker and docker-compose in Ubuntu distro .."
     $runtimeInstallScript = @"
-docker -v > /dev/null 2>&1 && docker-compose -v > /dev/null 2>&1 && echo "- docker and docker-compose are already installed" && exit 0;
+docker -v > /dev/null 2>&1 && {
+    echo " docker is already installed";
+} || {
+    echo "- Adding docker source ..";
+    sudo groupadd docker > /dev/null;
+    sudo usermod -aG docker `${USER};
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable" > /dev/null;
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
+    
+    echo "- Installing docker .."
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 install -y docker-ce containerd.io;
+}
 
-echo "- Adding docker source .."
-sudo groupadd docker > /dev/null
-sudo usermod -aG docker `${USER}
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable" > /dev/null
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
+docker-compose -v > /dev/null 2>&1 && {
+    echo " docker-compose is already installed";
+} || {
+    echo "- Installing pip3 .."
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
+    sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip;
+    
+    echo "- Installing docker-compose through pip3 ..";
+    sudo pip3 install docker-compose -q;
+}
 
-echo "- Installing docker .."
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 install -y docker-ce containerd.io
-
-echo "- Installing pip3 .."
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 update
-sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip
-
-echo "- Installing docker-compose through pip3 .."
-sudo pip3 install docker-compose -q
-
-echo "Setup auto-start docker service on Ubuntu (WSL) started"
+echo "Setup auto-start docker service on Ubuntu (WSL) started";
 grep -Fq 'sudo service docker start' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile;
 
-echo "Permit user `$USER starting docker service without password"
+echo "Permit user `$USER starting docker service without password";
 sudo grep -Fq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=(root) NOPASSWD: /usr/sbin/service docker *\n" | sudo tee -a /etc/sudoers > /dev/null;
-
 "@ -replace '"',"`"" -replace "`r",""
 }
 
 
 # Run install script for runtime
-Set-Content -Path "C:\install-wsl2-container-runtime.sh" -Value "$runtimeInstallScript"
+[System.IO.File]::WriteAllText('C:\install-wsl2-container-runtime.sh', "$runtimeInstallScript")
 & wsl -e bash "/mnt/c/install-wsl2-container-runtime.sh"
 Remove-Item "C:\install-wsl2-container-runtime.sh" | Out-Null
 Write-Host ""
