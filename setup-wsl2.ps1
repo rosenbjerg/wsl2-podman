@@ -24,13 +24,9 @@ Remove-Item $Wsl2KernelUpdatePath
 Write-Host ""
 
 
-# Set default WSL version for distros
-Write-Host "Setting default WSL version to 2 .."
-& wsl --set-default-version 2 | Out-Null
-
-
 # Stop and migrate Ubuntu distro if needed
 $wslDistros = (& wsl -l -v) -join "" -replace "\u0000",""
+$distro = "Ubuntu"
 if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1')
 {
     if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+Running\s+1')
@@ -45,13 +41,14 @@ if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1')
     $ubuntuVersion = [Regex]::Match($wslDistros, "Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1").Groups[1].Value
     Write-Host "Migrating Ubuntu$ubuntuVersion distro to WSL2 .. "
     & wsl --set-version "Ubuntu$ubuntuVersion" 2 | Out-Null
+    $distro = "Ubuntu$ubuntuVersion"
 }
 elseif (!($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+[12]'))
 {
     Write-Host "Ubuntu distro was not found and will now be installed. Press enter to continue .."
     Read-Host
 
-    Write-Host "Downloading Ubuntu WSL2 image .."
+    Write-Host "Downloading Ubuntu 20.04 WSL2 image (432MB) .."
     $WslUbuntu = "C:\Users\Public\Downloads\Ubuntu.appx"
     $ProgressPreference = 'SilentlyContinue'  
     Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile "$WslUbuntu" -UseBasicParsing
@@ -60,12 +57,13 @@ elseif (!($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+[12]'))
     Add-AppxPackage "$WslUbuntu" | Out-Null
     & ubuntu2004 run echo OK
     Remove-Item "$WslUbuntu" | Out-Null
+    $distro = "Ubuntu-20.04"
 }
 
 
 # Print distro info
 Write-Host "Distro info:"
-& wsl -e uname -a
+& wsl -d "$distro" uname -a
 Write-Host ""
 
 
@@ -177,7 +175,7 @@ sudo grep -Fq '/usr/sbin/service docker *' /etc/sudoers || printf "\n`$USER ALL=
 
 # Run install script for runtime
 [System.IO.File]::WriteAllText('C:\install-wsl2-container-runtime.sh', "$runtimeInstallScript")
-& wsl -e bash "/mnt/c/install-wsl2-container-runtime.sh"
+& wsl -d "$distro" bash "/mnt/c/install-wsl2-container-runtime.sh"
 Remove-Item "C:\install-wsl2-container-runtime.sh" | Out-Null
 Write-Host ""
 
@@ -186,12 +184,12 @@ Write-Host ""
 Write-Host "Adding WSL $runtime wrapper bat files .."
 $batFileDir = "C:\docker-bat-wrappers"
 [System.IO.Directory]::CreateDirectory($batFileDir) | Out-Null
-Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nwsl -e $runtime %*"
-Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nwsl -e $runtime-compose %*"
+Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nwsl -d "$distro" $runtime %*"
+Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nwsl -d "$distro" $runtime-compose %*"
 if ($runtime -eq 'podman')
 {
-    Set-Content -Path "$batFileDir\podman.bat" -Value "@echo off`r`nwsl -e podman %*"
-    Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nwsl -e podman-compose %*"
+    Set-Content -Path "$batFileDir\podman.bat" -Value "@echo off`r`nwsl -d "$distro" podman %*"
+    Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nwsl -d "$distro" podman-compose %*"
 }
 
 
@@ -222,7 +220,7 @@ if ($runtime -eq 'docker')
 {
     Write-Host "Restarting WSL so docker service is ready when WSL is started next time.."
     & wsl --shutdown | Out-Null
-    & wsl -e echo OK | Out-Null
+    & wsl -d "$distro" echo OK | Out-Null
     Write-Host ""
 }
 
