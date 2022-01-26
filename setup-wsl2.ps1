@@ -61,6 +61,7 @@ elseif ($distroWslVersion -eq '')
     Remove-Item "$WslUbuntu" | Out-Null
     $distro = "Ubuntu-20.04"
 }
+Write-Host ""
 
 
 # Print distro info
