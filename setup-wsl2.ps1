@@ -80,7 +80,7 @@ Write-Host ""
 
 
 # Set priority for Cisco AnyConnect network adapter if found
-Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match 'Cisco AnyConnect'} | Set-NetIPInterface -InterfaceMetric 6000 | Out-Null
+Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match 'Cisco AnyConnect'} | Set-NetIPInterface -ErrorAction SilentlyContinue -InterfaceMetric 6000 | Out-Null
 & wsl --shutdown | Out-Null
 
 
