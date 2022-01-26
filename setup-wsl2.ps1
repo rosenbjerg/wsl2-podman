@@ -185,12 +185,12 @@ Write-Host ""
 Write-Host "Adding WSL $runtime wrapper bat files .."
 $batFileDir = "C:\docker-bat-wrappers"
 [System.IO.Directory]::CreateDirectory($batFileDir) | Out-Null
-Set-Content -Path "$batFileDir\docker.bat" -Value "@echo off`r`nwsl -d "$distro" $runtime %*"
-Set-Content -Path "$batFileDir\docker-compose.bat" -Value "@echo off`r`nwsl -d "$distro" $runtime-compose %*"
+[System.IO.File]::WriteAllText("$batFileDir\docker.bat", "@echo off`r`nwsl -d $distro $runtime %*")
+[System.IO.File]::WriteAllText("$batFileDir\docker-compose.bat", "@echo off`r`nwsl -d $distro $runtime-compose %*")
 if ($runtime -eq 'podman')
 {
-    Set-Content -Path "$batFileDir\podman.bat" -Value "@echo off`r`nwsl -d "$distro" podman %*"
-    Set-Content -Path "$batFileDir\podman-compose.bat" -Value "@echo off`r`nwsl -d "$distro" podman-compose %*"
+    [System.IO.File]::WriteAllText("$batFileDir\podman.bat", "@echo off`r`nwsl -d $distro podman %*")
+    [System.IO.File]::WriteAllText("$batFileDir\podman-compose.bat", "@echo off`r`nwsl -d $distro podman-compose %*")
 }
 
 
