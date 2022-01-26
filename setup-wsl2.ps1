@@ -32,8 +32,8 @@ $distroWslVersion = [Regex]::Match($wslDistros, $wslDistroRegex).Groups[3].Value
 if ($distroWslVersion -eq '1')
 {
     $distroState = [Regex]::Match($wslDistros, $wslDistroRegex).Groups[2].Value
+    if ($distroState -eq 'Running')
     {
-        Write-Host "The current Ubuntu distro needs to be stopped before being migrated to WSL2. Press enter to continue"
         Write-Host "The current $distro distro needs to be stopped before being migrated to WSL2. Press enter to continue"
         Read-Host
         & wsl --shutdown | Out-Null
