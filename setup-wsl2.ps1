@@ -26,24 +26,25 @@ Write-Host ""
 
 # Stop and migrate Ubuntu distro if needed
 $wslDistros = (& wsl -l -v) -join "" -replace "\u0000",""
-$distro = "Ubuntu"
-if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1')
+$wslDistroRegex = "Ubuntu(-\d\d\.\d\d)?\s+([^\s]+)\s+([12])"
+$distro = "Ubuntu$([Regex]::Match($wslDistros, $wslDistroRegex).Groups[1].Value)"
+$distroWslVersion = [Regex]::Match($wslDistros, $wslDistroRegex).Groups[3].Value
+if ($distroWslVersion -eq '1')
 {
-    if ($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+Running\s+1')
+    $distroState = [Regex]::Match($wslDistros, $wslDistroRegex).Groups[2].Value
     {
         Write-Host "The current Ubuntu distro needs to be stopped before being migrated to WSL2. Press enter to continue"
+        Write-Host "The current $distro distro needs to be stopped before being migrated to WSL2. Press enter to continue"
         Read-Host
         & wsl --shutdown | Out-Null
     }
     
-    Write-Host "Ubuntu$ubuntuVersion will now be migrated to WSL2. Press enter to continue"
+    Write-Host "$distro will now be migrated to WSL2. Press enter to continue"
     Read-Host
-    $ubuntuVersion = [Regex]::Match($wslDistros, "Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+1").Groups[1].Value
-    Write-Host "Migrating Ubuntu$ubuntuVersion distro to WSL2 .. "
-    & wsl --set-version "Ubuntu$ubuntuVersion" 2 | Out-Null
-    $distro = "Ubuntu$ubuntuVersion"
+    Write-Host "Migrating $distro distro to WSL2 .. "
+    & wsl --set-version "$distro" 2 | Out-Null
 }
-elseif (!($wslDistros -match 'Ubuntu(-\d\d\.\d\d)?\s+[^\s]+\s+[12]'))
+elseif ($distroWslVersion -eq '')
 {
     Write-Host "Ubuntu distro was not found and will now be installed. Press enter to continue .."
     Read-Host
