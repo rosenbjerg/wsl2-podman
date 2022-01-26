@@ -53,9 +53,10 @@ elseif ($distroWslVersion -eq '')
     $WslUbuntu = "C:\Users\Public\Downloads\Ubuntu.appx"
     $ProgressPreference = 'SilentlyContinue'  
     Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile "$WslUbuntu" -UseBasicParsing
-    $ProgressPreference = 'Continue'
     Write-Host "Installing Ubuntu WSL2 image .."
     Add-AppxPackage "$WslUbuntu" | Out-Null
+    $ProgressPreference = 'Continue'
+
     & ubuntu2004 run echo OK
     Remove-Item "$WslUbuntu" | Out-Null
     $distro = "Ubuntu-20.04"
@@ -94,19 +95,19 @@ if ($runtime -eq 'podman')
 podman -v > /dev/null 2>&1 && {
     echo " podman is already installed";
 } || {
-    echo "- Adding kubic podman source and key ..";
+    echo "Adding kubic podman source and key ..";
     . /etc/os-release;
     sudo sh -c "printf 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x`${NAME}_`${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list";
     wget -q -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x`${NAME}_`${VERSION_ID}/Release.key -O ~/Release.key;
     sudo apt-key add - < ~/Release.key;
     sudo rm ~/Release.key;
 
-    echo "- Installing podman ..";
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install podman;
+    echo "Installing podman ..";
+    sudo apt-get -qq update > /dev/null;
+    sudo apt-get -qq -y install podman > /dev/null;
 }
 grep -Fq 'refresh_rootless_podman_after_reboot' ~/.profile || {
-    echo "- Adding podman tmp file clearing";
+    echo "Adding podman tmp file clearing";
     printf "
 function refresh_rootless_podman_after_reboot {
     local boot_id=\"\`$(cat /proc/sys/kernel/random/boot_id)\";
@@ -123,15 +124,15 @@ refresh_rootless_podman_after_reboot;" >> ~/.profile;
 podman-compose -v > /dev/null 2>&1 && {
     echo " podman-compose is already installed";
 } || {
-    echo "- Installing pip3 ..";
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip;
+    echo "Installing pip3 ..";
+    sudo apt-get -qq update > /dev/null;
+    sudo apt-get -qq -y install python3-pip > /dev/null 2>&1;
 
-    echo "- Installing podman-compose through pip3 ..";
-    sudo pip3 install podman-compose -q;
+    echo "Installing podman-compose through pip3 ..";
+    sudo pip3 install podman-compose -q > /dev/null;
 }
 
-echo "- Adding aliases for docker and docker-compose in .profile ..";
+echo "Adding aliases for docker and docker-compose in .profile ..";
 grep -Fxq 'alias docker=podman' ~/.profile || printf "\nalias docker=podman" >> ~/.profile;
 grep -Fxq 'alias docker-compose=podman-compose' ~/.profile || printf "\nalias docker-compose=podman-compose" >> ~/.profile;
 "@ -replace '"',"`"" -replace "`r",""
@@ -143,26 +144,26 @@ elseif ($runtime -eq 'docker')
 docker -v > /dev/null 2>&1 && {
     echo " docker is already installed";
 } || {
-    echo "- Adding docker source ..";
+    echo "Adding docker source ..";
     sudo groupadd docker > /dev/null;
     sudo usermod -aG docker `${USER};
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable" > /dev/null;
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
+    sudo apt-get -qq update > /dev/null;
     
-    echo "- Installing docker .."
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 install -y docker-ce containerd.io;
+    echo "Installing docker .."
+    sudo apt-get -qq -y install docker-ce containerd.io > /dev/null;
 }
 
 docker-compose -v > /dev/null 2>&1 && {
     echo " docker-compose is already installed";
 } || {
-    echo "- Installing pip3 .."
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 update;
-    sudo apt-get -qq -o=Dpkg::Use-Pty=0 -y install python3-pip;
+    echo "Installing pip3 ..";
+    sudo apt-get -qq update > /dev/null;
+    sudo apt-get -qq -y install python3-pip > /dev/null 2>&1;
     
-    echo "- Installing docker-compose through pip3 ..";
-    sudo pip3 install docker-compose -q;
+    echo "Installing docker-compose through pip3 ..";
+    sudo pip3 install docker-compose -q > /dev/null;
 }
 
 echo "Setup auto-start docker service on Ubuntu (WSL) started";
