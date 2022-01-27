@@ -24,9 +24,9 @@ Remove-Item $Wsl2KernelUpdatePath
 Write-Host ""
 
 
-# Set default WSL version for distros
-Write-Host "Setting default WSL version to 2 .."
-& wsl --set-default-version 2 | Out-Null
+## Set default WSL version for distros
+#Write-Host "Setting default WSL version to 2 .."
+#& wsl --set-default-version 2 | Out-Null
 
 
 # Stop and migrate Ubuntu distro if needed
