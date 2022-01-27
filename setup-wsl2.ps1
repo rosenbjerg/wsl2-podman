@@ -22,13 +22,14 @@ Write-Host "Installing WSL2 kernel update for Windows .."
 Start-Sleep -s 1 # wait for msiexec to release file
 Remove-Item $Wsl2KernelUpdatePath
 Write-Host ""
-#
-#
-## Set default WSL version for distros
-#Write-Host "Setting default WSL version to 2 .."
-#& wsl --set-default-version 2 | Out-Null
-#
-#
+
+
+# Set default WSL version for distros
+Write-Host "Setting default WSL version to 2 .."
+& wsl --set-default-version 2 | Out-Null
+Write-Host ""
+
+
 # Stop and migrate Ubuntu distro if needed
 $wslDistros = (& wsl -l -v) -join "" -replace "\u0000",""
 $wslDistroRegex = "Ubuntu(-\d\d\.\d\d)?\s+([^\s]+)\s+([12])"
