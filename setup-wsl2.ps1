@@ -62,11 +62,12 @@ elseif ($distroWslVersion -eq '')
     Write-Host "Installing Ubuntu WSL2 image .."
     Add-AppxPackage "$WslUbuntu" | Out-Null
     $ProgressPreference = 'Continue'
-
-    & ubuntu2004 run echo OK
+    Start-Sleep -s 1 # wait for Add-AppxPackage to finish stuff up
     Remove-Item "$WslUbuntu" | Out-Null
     $distro = "Ubuntu-20.04"
 }
+Write-Host "Ensuring $distro is initialized .."
+& wsl -d "$distro" echo OK
 Write-Host ""
 
 
