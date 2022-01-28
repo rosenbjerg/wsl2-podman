@@ -73,7 +73,7 @@ elseif ($distroWslVersion -eq '')
     $ProgressPreference = 'Continue'
     & ubuntu echo OK
     Remove-Item "$WslUbuntu" | Out-Null
-    $distro = "Ubuntu-20.04"
+    $distro = "Ubuntu"
     Write-Host ""
 }
 
