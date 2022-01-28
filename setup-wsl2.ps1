@@ -71,7 +71,7 @@ elseif ($distroWslVersion -eq '')
     Write-Host "Installing Ubuntu WSL2 image .."
     Add-AppxPackage "$WslUbuntu" | Out-Null
     $ProgressPreference = 'Continue'
-    & ubuntu echo OK
+    & ubuntu run echo OK
     Remove-Item "$WslUbuntu" | Out-Null
     $distro = "Ubuntu"
     Write-Host ""
