@@ -147,7 +147,7 @@ podman-compose -v > /dev/null 2>&1 && {
     sudo pip3 install podman-compose -q > /dev/null;
 }
 
-echo "Adding aliases for docker and docker-compose in .profile ..";
+echo "Adding podman aliases for docker and docker-compose in .profile ..";
 grep -Fxq 'alias docker=podman' ~/.profile || printf "\nalias docker=podman" >> ~/.profile;
 grep -Fxq 'alias docker-compose=podman-compose' ~/.profile || printf "\nalias docker-compose=podman-compose" >> ~/.profile;
 "@ -replace '"',"`"" -replace "`r",""
