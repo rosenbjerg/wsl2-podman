@@ -40,19 +40,20 @@ if ($distroWslVersion -eq '1')
     $distroState = [Regex]::Match($wslDistros, $wslDistroRegex).Groups[2].Value
     if ($distroState -eq 'Running')
     {
-        Write-Host "The current $distro distro needs to be stopped before being migrated to WSL2. Press enter to continue"
+        Write-Host -ForegroundColor Yellow "The current $distro distro needs to be stopped before being migrated to WSL2. Press enter to continue"
         Read-Host
         & wsl --shutdown | Out-Null
     }
     
-    Write-Host "$distro will now be migrated to WSL2. Press enter to continue"
+    Write-Host -ForegroundColor Yellow "$distro will now be migrated to WSL2. Press enter to continue"
     Read-Host
     Write-Host "Migrating $distro distro to WSL2 .. "
     & wsl --set-version "$distro" 2 | Out-Null
+    Write-Host ""
 }
 elseif ($distroWslVersion -eq '')
 {
-    Write-Host "Ubuntu distro was not found and will now be installed. Press enter to continue .."
+    Write-Host -ForegroundColor Yellow "Ubuntu distro was not found and will now be installed. Press enter to continue .."
     Read-Host
 
     Write-Host "Downloading Ubuntu 20.04 WSL2 image (432MB) .."
@@ -73,8 +74,8 @@ elseif ($distroWslVersion -eq '')
     & ubuntu2004 echo OK
     Remove-Item "$WslUbuntu" | Out-Null
     $distro = "Ubuntu-20.04"
+    Write-Host ""
 }
-Write-Host ""
 
 
 # Print distro info
@@ -86,7 +87,7 @@ Write-Host ""
 # podman or docker?
 $runtime = ''
 while ($runtime -ne 'podman' -And $runtime -ne 'docker') {
-    Write-Host 'podman or docker?'
+    Write-Host -ForegroundColor Yellow 'podman or docker?'
     $runtime = Read-Host
 }
 
@@ -241,12 +242,12 @@ if ($runtime -eq 'docker')
 }
 
 # bye
-Write-Host "You should now have $runtime, $runtime-compose available in your terminal"
+Write-Host -ForegroundColor Green "You should now have $runtime, $runtime-compose available in your terminal"
 if ($runtime -eq 'podman')
 {
-    Write-Host "(the aliases docker and docker-compose were also added)"
+    Write-Host "The aliases docker and docker-compose were also added"
 }
 Write-Host "Please share improvements and suggestions as issues on https://github.com/rosenbjerg/wsl2-podman"
 Write-Host ""
-Write-Host "Press enter to close this window"
+Write-Host -ForegroundColor Yellow "Press enter to close this window"
 Read-Host
