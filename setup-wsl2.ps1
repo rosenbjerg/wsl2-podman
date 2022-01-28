@@ -58,7 +58,15 @@ elseif ($distroWslVersion -eq '')
     Write-Host "Downloading Ubuntu 20.04 WSL2 image (432MB) .."
     $WslUbuntu = "C:\Users\Public\Downloads\Ubuntu.appx"
     $ProgressPreference = 'SilentlyContinue'  
-    Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile "$WslUbuntu" -UseBasicParsing
+    try {
+        Invoke-WebRequest -Uri https://aka.ms/wslubuntu2004 -OutFile "$WslUbuntu" -UseBasicParsing
+    }
+    catch {
+        Write-Host -ForegroundColor Red "Downloading the Ubuntu 20.04 image failed. Please re-run the script to retry"
+        Write-Host -ForegroundColor Yellow "Press enter to close"
+        Read-Host
+        Exit 1
+    }
     Write-Host "Installing Ubuntu WSL2 image .."
     Add-AppxPackage "$WslUbuntu" | Out-Null
     $ProgressPreference = 'Continue'
