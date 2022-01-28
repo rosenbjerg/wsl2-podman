@@ -56,7 +56,7 @@ elseif ($distroWslVersion -eq '')
     Write-Host -ForegroundColor Yellow "Ubuntu distro was not found and will now be installed. Press enter to continue .."
     Read-Host
 
-    Write-Host "Downloading Ubuntu 20.04 WSL2 image (432MB) .."
+    Write-Host "Downloading Ubuntu 20.04 WSL2 image (895MB) - this might take a while due to slow servers .."
     $WslUbuntu = "C:\Users\Public\Downloads\Ubuntu.appx"
     $ProgressPreference = 'SilentlyContinue'  
     try {
