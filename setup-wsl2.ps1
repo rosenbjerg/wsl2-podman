@@ -117,6 +117,7 @@ podman -v > /dev/null 2>&1 && {
     sudo apt-key add - < ~/Release.key;
     sudo rm ~/Release.key;
 
+    echo ""
     echo "Installing podman ..";
     sudo apt-get -qq update > /dev/null;
     sudo apt-get -qq -y install podman > /dev/null;
@@ -139,6 +140,7 @@ refresh_rootless_podman_after_reboot;" >> ~/.profile;
 podman-compose -v > /dev/null 2>&1 && {
     echo " podman-compose is already installed";
 } || {
+    echo ""
     echo "Installing pip3 ..";
     sudo apt-get -qq update > /dev/null;
     sudo apt-get -qq -y install python3-pip > /dev/null 2>&1;
@@ -166,6 +168,7 @@ docker -v > /dev/null 2>&1 && {
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu `$(lsb_release -cs) stable" > /dev/null;
     sudo apt-get -qq update > /dev/null;
     
+    echo ""
     echo "Installing docker .."
     sudo apt-get -qq -y install docker-ce containerd.io > /dev/null;
 }
@@ -173,6 +176,7 @@ docker -v > /dev/null 2>&1 && {
 docker-compose -v > /dev/null 2>&1 && {
     echo " docker-compose is already installed";
 } || {
+    echo ""
     echo "Installing pip3 ..";
     sudo apt-get -qq update > /dev/null;
     sudo apt-get -qq -y install python3-pip > /dev/null 2>&1;
@@ -181,6 +185,7 @@ docker-compose -v > /dev/null 2>&1 && {
     sudo pip3 install docker-compose -q > /dev/null;
 }
 
+echo ""
 echo "Setup auto-start docker service on Ubuntu (WSL) started";
 grep -Fq 'sudo service docker start' ~/.profile || printf "\nsudo service docker status > /dev/null || sudo service docker start > /dev/null" >> ~/.profile;
 
