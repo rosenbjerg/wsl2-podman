@@ -19,6 +19,9 @@ If you experience problems starting the installer using the `.bat` script, it ma
 Right-click on the `.ps1` file and select Properties. Then in the General tab, you will see the option to unblock it. 
 After unblocking, you should be able to start the install script.
 
+If that doesn't solve it, you may need to move the two files to another directory, possibly due OneDrive synchronization of the current folder.
+Moving the two files to the root of `C:\` should resolve the issue.
+
 ### Absolute paths
 One problem with this docker-desktop alternative is that you cannot use absolute paths for mounting.
 Instead you will have to either use relative paths or rewrite `C:\` to `/mnt/c/` and use forward slashes
