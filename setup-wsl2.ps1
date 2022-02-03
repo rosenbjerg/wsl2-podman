@@ -228,7 +228,7 @@ if (!$oldEnvPath.Contains($batFileDir)) {
 Write-Host "Adding hosts file entries for convenience .."
 $hostsFilePath = "C:\Windows\system32\drivers\etc\hosts"
 $oldHostsFile = [IO.File]::ReadAllText($hostsFilePath)
-foreach ($hostsFileEntry in @('::1 wsl', '::1 docker', '::1 podman')) {
+foreach ($hostsFileEntry in @('0:0:0:0:0:0:0:1 wsl', '0:0:0:0:0:0:0:1 docker', '0:0:0:0:0:0:0:1 podman')) {
     if (!$oldHostsFile.Contains($hostsFileEntry)) {
         Write-Host "Adding '$hostsFileEntry' to hosts file"
         [IO.File]::AppendAllText($hostsFilePath, "`r`n$hostsFileEntry")
