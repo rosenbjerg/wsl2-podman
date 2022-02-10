@@ -30,4 +30,10 @@ Instead you will have to either use relative paths or rewrite `C:\` to `/mnt/c/`
 Some applications automatically resolve localhost to `127.0.0.1` (IPv4) which Windows doesn't forward to WSL2, without checking the Windows `hosts` file.
 This means you may experience problems connecting to the containers running in WSL2, if using `localhost`. 
 
-If you do, try changing from `localhost`/`127.0.0.1` to `::1` (for TCP connections and `[::1]` for HTTP) or to `wsl`
+If you do experience this, try changing `localhost`/`127.0.0.1` to `::1` (for TCP connections and `[::1]` for HTTP) or to `wsl`
+
+### Missing internet connectivity when using Cisco AnyConnect on Windows host
+Connecting or disconnecting the AnyConnect client can cause internet connectivity problems in WSL2. Running the following powershell command with elevated rights fixes this:
+```powershell
+Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match 'Cisco AnyConnect'} | Set-NetIPInterface -ErrorAction SilentlyContinue -InterfaceMetric 6000 | Out-Null
+```
