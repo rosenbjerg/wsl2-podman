@@ -120,7 +120,7 @@ podman -v > /dev/null 2>&1 && {
     echo ""
     echo "Installing podman ..";
     sudo apt-get -qq update > /dev/null;
-    sudo apt-get -qq -y install podman > /dev/null;
+    sudo apt-get -qq -y install podman slirp4netns > /dev/null;
 }
 grep -Fq 'refresh_rootless_podman_after_reboot' ~/.profile || {
     echo "Adding podman tmp file clearing";
