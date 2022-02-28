@@ -1,14 +1,19 @@
 # Install script for WSL2 + podman and podman-compose (or docker and docker-compose I guess)
 # Author: Malte Rosenbjerg
 
-# Enable required Windows features
-$host.ui.RawUI.WindowTitle = "Installing WSL2 + ?"
-Write-Host "Enabling Windows feature: Microsoft-Windows-Subsystem-Linux .."
-& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart | Out-Null
 
-Write-Host "Enabling Windows feature: VirtualMachinePlatform .."
-& dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart | Out-Null
-Write-Host ""
+# Enable required Windows features
+if (!(Get-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online).State -eq 'Enabled')
+{
+    Write-Host "Enabling Windows feature: Microsoft-Windows-Subsystem-Linux .."
+    & dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart | Out-Null
+}
+
+if (!(Get-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online).State -eq 'Enabled')
+{
+    Write-Host "Enabling Windows feature: VirtualMachinePlatform .."
+    & dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart | Out-Null
+}
 
 
 # Install WSL2 kernel update
