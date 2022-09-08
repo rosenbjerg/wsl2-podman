@@ -74,6 +74,12 @@ $targetHostsEntries.ForEach({
   })
 
 
+if ($Docker) {
+  Write-Information "Restarting WSL"
+  wsl --shutdown
+  wsl -d Ubuntu :
+}
+
 Write-Host -ForegroundColor Green "`nInstall successful! Try running $runtime or $runtime-compose`n"
 Write-Host -ForegroundColor Yellow "Press any key to exit"
 Read-Host
