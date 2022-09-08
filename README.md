@@ -16,6 +16,11 @@
 1. [Clone or download][clone-repository] this repository
 2. In an Administrator prompt, run the [`Install-ContainerRuntime.ps1`][Install-ContainerRuntime.ps1] script
 
+```powershell
+# Defaults to podman, add -Docker to install docker-ce instead
+.\scripts\Install-ContainerRuntime.ps1
+```
+
 ### Known Issues
 
 #### Absolute paths
