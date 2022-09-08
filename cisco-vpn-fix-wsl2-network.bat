@@ -1,1 +1,0 @@
-powershell -Command "& {Start-Process Powershell.exe -ArgumentList '-ExecutionPolicy Bypass -File %~dp0cisco-vpn-fix-wsl2-network.ps1' -Verb RunAs}"
